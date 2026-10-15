@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self';">
+  <title>SpotSafe 360 - the goods-in bay</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=17.4">
+  <!-- Phase 9.5: session gate before the engine loads - a round can never
+       start without a profile or guest session (login.html creates both). -->
+  <script src="js/store.js?v=17.4"></script>
+  <script src="js/net.js?v=17.4"></script>
+  <script src="js/gate.js?v=17.4"></script>
+  <script src="js/boot.js?v=17.4"></script>
+  <!-- A-Frame 1.6.0 vendored, pinned with SRI. The version query defeats any
+       poisoned cache entry. The engine needs 'unsafe-eval' in the CSP above:
+       it compiles small code strings internally at startup. -->
+  <script src="vendor/aframe.min.js?v=1.0.0"></script>
+</head>
+
+<body>
+
+  <!-- 17.0: branded splash while the bay loads. app.js lifts it once the
+       engine is ready, or when the failure banner has to take over. -->
+  <div id="splash">
+    <svg class="splash-mark" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M32 3 7 12v20c0 14 10.7 24.6 25 29 14.3-4.4 25-15 25-29V12L32 3z" fill="#FFD100"/>
+      <path d="M32 8 12 15.2V32c0 11.6 8.6 20.4 20 24.3C43.4 52.4 52 43.6 52 32V15.2L32 8z" fill="#10243E"/>
+      <text x="32" y="38" text-anchor="middle" font-size="17" font-weight="800" fill="#FFD100" font-family="Arial, sans-serif">360</text>
+    </svg>
+    <div class="splash-name">Spot<b>Safe</b> 360</div>
+    <div class="splash-note" id="splashNote">Loading the bay...</div>
+    <div class="splash-spin" aria-hidden="true"></div>
+  </div>
+
+  <!-- Engine failure banner with self-diagnosis -->
+  <div id="engineFail" class="overlay hidden">
+    <div class="panel fail">
+      <h2>The 3D engine did not start</h2>
+      <p id="failWhy">Checking why...</p>
+      <p class="row center"><button class="btn-primary" id="btnRetry">Try again</button></p>
+      <p class="fine center">Tip: hold Shift and press the browser reload button to skip the cache.</p>
+    </div>
+  </div>
+
+  <!-- The scene: static shell only. The bay and every hazard are built from
+       js/hazards.js data by js/app.js, so content changes are data edits.
+       Phase 9 light rig: one hemisphere fill, one cold sky-spill from the
+       dock doors, two warm pools under the high-bays. Everything else that
+       glows is emissive material, which costs no extra lights. -->
+  <a-scene id="scene" background="color:#0B1622" fog="type: exponential; color: #0B1622; density: 0.015" loading-screen="enabled:false" vr-mode-ui="enabled: false">
+    <a-light type="hemisphere" color="#7E93B0" ground-color="#141008" intensity="0.24"></a-light>
+    <a-light type="directional" intensity="0.24" position="3 10 -16" color="#B9CFEA"></a-light>
+    <a-light type="point" intensity="0.5" distance="20" decay="2" position="0 6.8 -3" color="#FFE3B4"></a-light>
+    <a-light type="point" intensity="0.5" distance="20" decay="2" position="0 6.8 6" color="#FFDDA6"></a-light>
+    <a-entity id="room"></a-entity>
+    <a-entity id="props"></a-entity>
+    <a-entity id="hotspots"></a-entity>
+    <a-entity id="debugLayer"></a-entity>
+    <!-- Phase 9.6: third-person - the camera no longer walks itself (no
+         wasd-controls); app.js moves a visible worker avatar and orbits the
+         camera behind it. look-controls still owns the mouse look. -->
+    <a-camera id="cam" position="0 2.45 11.7" fov="75" near="0.05" far="120"
+      look-controls="pointerLockEnabled: true"
+      cursor="rayOrigin: mouse; objects: .hotspot, #room, #props"></a-camera>
+  </a-scene>
+
+  <!-- Centre reticle: the aim for the E flag -->
+  <div id="reticle" class="hidden" aria-hidden="true"></div>
+
+  <!-- 17.3: shown while the round runs but the mouse is free - click the
+       screen to capture it again -->
+  <div id="lookHint" class="hidden" role="status" aria-live="polite">Click to look around</div>
+
+  <!-- Where list mode dropped you: spoken by screen readers as it appears -->
+  <div id="locate" class="hidden" role="status" aria-live="polite">
+    <b id="locateWhere"></b>
+    <span id="locateTip"></span>
+  </div>
+
+  <!-- Phase 14: shown while the review has flown to a hazard spot -->
+  <button type="button" id="btnBackReview" class="back-review hidden"></button>
+
+  <!-- HUD: icons and numbers only -->
+  <div id="hud" class="hidden">
+    <div class="hud-left">
+      <span class="hud-stat" title="Score"><span class="ico" id="icoScore"></span><b id="hudScore">0</b></span>
+      <span class="hud-stat" title="Streak"><span class="ico" id="icoStreak"></span><b id="hudStreak">0</b></span>
+      <span class="hud-stat" title="Hazards found"><span class="ico" id="icoFound"></span><b id="hudFound">0 /
+          9</b></span>
+      <span class="hud-stat hidden" id="timeStat" title="Time left"><span class="ico" id="icoTime"></span><b
+          id="hudTime">1:30</b></span>
+      <span class="perk-chip hidden" id="perkChip" title="Your role perk this round"></span>
+      <span class="duel-chip hidden" id="duelChip" title="This round is one side of a 1v1 challenge"></span>
+    </div>
+    <div class="hud-right">
+      <button class="hud-btn" id="btnList" title="List mode" aria-label="List mode"></button>
+      <button class="hud-btn" id="btnVR" title="Enter VR" aria-label="Enter VR"></button>
+      <button class="hud-btn" id="btnPause" title="Pause" aria-label="Pause"></button>
+      <button class="hud-btn" id="btnMute" title="Sound" aria-label="Sound"></button>
+    </div>
+  </div>
+
+  <!-- Feedback card: icon, one line, more on tap -->
+  <div id="card" class="hidden" role="status" aria-live="polite">
+    <div class="card-row">
+      <span class="card-ico" id="cardIco"></span>
+      <div class="card-main">
+        <h3 id="cardTitle"></h3>
+        <p class="card-line" id="cardWhat"></p>
+        <div class="card-more hidden" id="cardMore">
+          <p class="card-line"><b id="uiWhy">Why:</b> <span id="cardWhy"></span></p>
+          <p class="card-line"><b id="uiControl">Control:</b> <span id="cardControl"></span></p>
+        </div>
+      </div>
+      <button class="card-expand" id="btnExpand" aria-label="More"></button>
+    </div>
+    <div class="card-bar" id="cardBar"></div>
+  </div>
+
+  <!-- Start gate (16.6): its button click is the user gesture the browser
+       requires before it will capture the mouse for click-free looking -->
+  <div id="startGate" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Ready to start">
+    <div class="panel">
+      <h2 id="gateTitle">Ready to walk the bay?</h2>
+      <p class="row center" id="gateBody"></p>
+      <p class="row center"><button class="btn-primary" id="btnGateGo">Start the round</button></p>
+    </div>
+  </div>
+
+  <!-- Pause panel (Phase 4): Esc or the pause button -->
+  <div id="pause" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Paused">
+    <div class="panel">
+      <h2 id="pauseTitle">Paused</h2>
+      <p class="row center" id="pauseInfo"></p>
+      <div class="panel-col">
+        <button class="btn-primary" id="btnResume">Resume</button>
+        <button class="btn-quiet" id="btnRestart">Restart round</button>
+        <button class="btn-quiet" id="btnMenu">Main menu</button>
+      </div>
+      <p class="fine center" id="pauseFine">Press Esc to resume.</p>
+    </div>
+  </div>
+
+  <!-- Quick-check quiz (A7): a few questions between the round and the review.
+       Questions come from the QUIZ pool in js/hazards.js, so adding or rewording
+       a question is a data edit, never a code edit. -->
+  <div id="quiz" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Quick check">
+    <div class="panel panel-scroll">
+      <h2 id="quizTitle">Quick check</h2>
+      <p class="fine" id="quizIntro"></p>
+      <p class="quiz-progress" id="quizProgress"></p>
+      <h3 class="quiz-ask" id="quizAsk"></h3>
+      <div class="quiz-options" id="quizOptions" role="group" aria-labelledby="quizAsk"></div>
+      <div class="quiz-feedback hidden" id="quizFeedback" role="status" aria-live="polite">
+        <b id="quizVerdict"></b> <span id="quizBecause"></span>
+      </div>
+      <p class="row center"><button class="btn-primary hidden" id="btnQuizNext"></button></p>
+    </div>
+  </div>
+
+  <!-- Round end panel (Phase 5): full review - stats, minimap, reaction chips -->
+  <div id="roundEnd" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Round over">
+    <div class="panel panel-scroll">
+      <h2 id="endTitle">Time up</h2>
+      <div class="end-stats" id="endStats"></div>
+      <h3 class="review-title" id="endMapTitle">Where everything was</h3>
+      <div id="endMap"></div>
+      <h3 class="review-title" id="endChipsTitle">Your finds</h3>
+      <div class="chips" id="endChips"></div>
+      <p class="fine" id="reviewHint"></p>
+      <p class="duel-result hidden" id="duelResult"></p>
+      <div class="panel-col">
+        <button class="btn-primary" id="btnAgain">Replay round</button>
+        <button class="btn-quiet hidden" id="btnEndDash"></button>
+        <button class="btn-quiet" id="btnEndMenu">Main menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- List mode (Phase 5): the bay in words, keyboard and screen-reader route -->
+  <div id="listMode" class="overlay hidden" role="dialog" aria-modal="true" aria-label="List mode">
+    <div class="panel panel-scroll">
+      <h2 id="listTitle">List mode</h2>
+      <ul class="list-items" id="listItems"></ul>
+      <p class="row center"><button class="btn-primary" id="btnListClose">Back to the bay</button></p>
+      <p class="fine center" id="listFine">Close with Esc. Taking you to a place walks you over and turns you to face it. Flagging still happens in the bay, with a click or the E key.</p>
+    </div>
+  </div>
+
+  <!-- VR fallback card (Phase 5): explains itself when no headset is present -->
+  <div id="vrCard" class="overlay hidden" role="dialog" aria-modal="true" aria-label="VR mode">
+    <div class="panel">
+      <h2 id="vrTitle">VR mode</h2>
+      <p class="card-line" id="vrBody"></p>
+      <p class="row center"><button class="btn-primary" id="btnVrClose">Close</button></p>
+    </div>
+  </div>
+
+  <div id="phaseTag">Loading the bay...</div>
+
+  <script src="js/hazards.js?v=17.4"></script>
+  <!-- store.js + net.js already loaded in the head for the session gate -->
+  <script src="js/textures.js?v=17.4"></script>
+  <!-- Phase 9.8 module split: classic script modules, load order matters.
+       core (state/helpers) -> world (bay) -> player (movement/camera) ->
+       audio -> game (round) -> quiz -> review -> app (orchestrator). -->
+  <script src="js/core.js?v=17.4"></script>
+  <script src="js/world.js?v=17.4"></script>
+  <script src="js/player.js?v=17.4"></script>
+  <script src="js/audio.js?v=17.4"></script>
+  <script src="js/juice.js?v=17.4"></script>
+  <script src="js/game.js?v=17.4"></script>
+  <script src="js/quiz.js?v=17.4"></script>
+  <script src="js/review.js?v=17.4"></script>
+  <script src="js/app.js?v=17.4"></script>
+<div class="buildTag">SS360 · build 17.4</div>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a49dbb73681a2865',t:'MTc5MTg4ODA5MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+</html>

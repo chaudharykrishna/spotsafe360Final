@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0A1524">
+  <!-- Same strict CSP as the portal: the dashboard is pure DOM and never
+       loads the 3D engine, so it works on any machine even where the engine
+       is blocked (ADR-003 containment, applied again). Phase 8, CR-2. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self';">
+  <title>SpotSafe 360 - my dashboard</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=16.5">
+</head>
+<body class="portal dash">
+
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="portal-wrap dash-wrap">
+
+    <header class="topbar">
+      <div class="logo">
+        <img class="logo-mark" src="img/logo.svg" width="34" height="39" alt="" aria-hidden="true">
+        <span>SpotSafe 360</span>
+      </div>
+      <div class="topbar-right">
+        <a class="btn-primary btn-sm" id="btnPlay" href="index.html"></a>
+        <button class="btn-quiet" id="btnPortal"></button>
+        <button class="btn-quiet" id="btnExport"></button>
+        <button class="btn-quiet" id="btnImport"></button>
+        <button class="btn-quiet" id="btnOut"></button>
+      </div>
+    </header>
+
+    <!-- Not logged in -->
+    <section class="panel dash-login hidden" id="needLogin" aria-label="Login needed">
+      <h2 id="nlTitle">Log in to see your dashboard</h2>
+      <p class="fine" id="nlFine"></p>
+      <p class="row"><a class="btn-primary" href="index.html" id="nlBtn">Back to the portal</a></p>
+    </section>
+
+    <main id="dashMain" class="hidden">
+
+      <!-- Identity header -->
+      <section class="dash-head">
+        <span class="dash-av" id="dashAv"></span>
+        <div>
+          <h1 id="dashName"></h1>
+          <p class="dash-since" id="dashSince"></p>
+        </div>
+      </section>
+
+      <!-- Empty state: a new profile has no history yet -->
+      <section class="panel dash-empty hidden" id="dashEmpty">
+        <h2 id="deTitle"></h2>
+        <p class="fine" id="deFine"></p>
+        <p class="row"><a class="btn-primary" href="index.html" id="deBtn"></a></p>
+      </section>
+
+      <!-- Phase 9.9: concise dashboard - four numbers, one focus line,
+           the recent rounds. Nothing else. -->
+      <div id="dashBody">
+        <section class="dash-tiles" id="tiles" aria-label="Headline statistics"></section>
+
+        <section class="dash-card">
+          <h2 class="side-title" id="lbTitle"></h2>
+          <p class="fine" id="lbFine"></p>
+          <div class="table-scroll" id="lbBox"></div>
+          <p class="fine lb-you" id="lbYou"></p>
+        </section>
+
+        <section class="dash-card" id="duelCard">
+          <h2 class="side-title" id="duelTitle"></h2>
+          <p class="fine" id="duelFine"></p>
+          <div id="duelBody" class="hidden">
+            <div class="duel-box">
+              <h3 class="duel-box-title" id="duelStartTitle"></h3>
+              <p class="duel-line">
+                <select id="duelDiff" aria-label="Duel difficulty"></select>
+                <button class="btn-primary btn-sm" id="duelCreate"></button>
+              </p>
+            </div>
+            <div class="duel-box">
+              <h3 class="duel-box-title" id="duelJoinTitle"></h3>
+              <p class="duel-line">
+                <input id="duelCodeIn" class="code-input" maxlength="14"
+                       placeholder="DUEL-XXXX" autocomplete="off" spellcheck="false"
+                       aria-label="Challenge code">
+                <button class="btn-quiet btn-sm" id="duelJoin"></button>
+              </p>
+              <p class="fine duel-msg hidden" id="duelMsg" role="status"></p>
+            </div>
+            <p class="duel-line hidden" id="duelCodeRow">
+              <span class="fine" id="duelCodeLabel"></span>
+              <input id="duelCodeOut" class="code-input" readonly autocomplete="off"
+                     spellcheck="false" aria-label="Challenge code">
+              <button class="btn-quiet btn-sm" id="duelCopy"></button>
+            </p>
+            <p class="row hidden" id="duelPlayRow">
+              <a class="btn-primary btn-sm" id="duelPlayMine"></a>
+            </p>
+            <h3 class="side-title" id="duelMineTitle"></h3>
+            <div class="table-scroll" id="duelListBox"></div>
+          </div>
+        </section>
+
+        <section class="dash-card">
+          <h2 class="side-title" id="weakTitle"></h2>
+          <p class="weak-line" id="weakBox"></p>
+        </section>
+
+        <section class="dash-card">
+          <h2 class="side-title" id="recentTitle"></h2>
+          <div class="table-scroll" id="recentBox"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="portal-foot">
+      <p class="privacy" id="privacyLine"></p>
+      <p class="credit">A Multiply enterprise project &middot; UK HSE hazard content</p>
+    </footer>
+  </div>
+
+  <input type="file" id="importFile" accept=".json,application/json" class="hidden" tabindex="-1" aria-hidden="true">
+
+  <script src="js/hazards.js?v=16.5"></script>
+  <script src="js/store.js?v=16.5"></script>
+  <script src="js/net.js?v=16.5"></script>
+  <script src="js/gate.js?v=16.5" data-requires="user"></script>
+  <script src="js/dashcalc.js?v=16.5"></script>
+  <script src="js/dashboard.js?v=16.5"></script>
+<div class="buildTag">SS360 · build 16.5</div>
+</body>
+</html>

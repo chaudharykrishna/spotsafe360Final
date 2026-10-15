@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0A1524">
+  <!-- Phase 9.5: the sign-in / sign-up portal. Pure DOM like index.html -
+       no engine, no 'unsafe-eval'. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self';">
+  <title>SpotSafe 360 - sign in</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=16.6">
+</head>
+<body class="portal">
+
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="portal-wrap auth-wrap">
+
+    <header class="topbar">
+      <div class="logo">
+        <img class="logo-mark" src="img/logo.svg" width="34" height="39" alt="" aria-hidden="true">
+        <span>SpotSafe 360</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-quiet" id="btnHowTo">How to play</button>
+      </div>
+    </header>
+
+    <main class="auth-main">
+
+      <section class="hero auth-hero">
+        <h1>Clock in.<br><em>Hard hats on.</em></h1>
+        <p class="tagline" id="authTagline"></p>
+      </section>
+
+      <section class="auth-card" aria-label="Sign in or create an account">
+
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab" id="tabSignin" role="tab" aria-selected="true"></button>
+          <button class="auth-tab" id="tabSignup" role="tab" aria-selected="false"></button>
+        </div>
+
+        <!-- Sign in: username + password, like any SaaS product -->
+        <div class="auth-pane" id="paneSignin">
+          <div class="field">
+            <label for="siUser" id="siUserLabel"></label>
+            <input id="siUser" type="text" maxlength="64" autocomplete="username" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="siPass" id="siPassLabel"></label>
+            <input id="siPass" type="password" autocomplete="current-password">
+          </div>
+          <p class="dialog-error fine hidden" id="siError" role="status"></p>
+          <p class="row"><button class="btn-primary" id="siUnlock"></button></p>
+        </div>
+
+        <!-- Create account: name, username, email, avatar, password -->
+        <div class="auth-pane hidden" id="paneSignup">
+          <p class="fine" id="suFine"></p>
+          <div class="field">
+            <label for="suName" id="suNameLabel"></label>
+            <input id="suName" type="text" maxlength="16" autocomplete="name" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="suUser" id="suUserLabel"></label>
+            <input id="suUser" type="text" maxlength="16" autocomplete="username" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="suEmail" id="suEmailLabel"></label>
+            <input id="suEmail" type="email" maxlength="64" autocomplete="email" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="suCompanyCode" id="suCompanyCodeLabel"></label>
+            <input id="suCompanyCode" type="text" maxlength="24" autocomplete="off" spellcheck="false"
+                   placeholder="e.g. HIMALAYA-4F2K" style="text-transform:uppercase">
+          </div>
+          <div class="field">
+            <label for="suCompanyName" id="suCompanyNameLabel"></label>
+            <input id="suCompanyName" type="text" maxlength="48" autocomplete="organization" spellcheck="false"
+                   placeholder="e.g. Himalaya Logistics">
+          </div>
+          <p class="fine" id="suCompanyFine"></p>
+          <div class="field">
+            <span class="field-label" id="suAvatarLabel"></span>
+            <div class="avatar-row" id="suAvatars" role="group" aria-labelledby="suAvatarLabel"></div>
+          </div>
+          <div class="pin-pair">
+            <div class="field">
+              <label for="suPin1" id="suPin1Label"></label>
+              <input id="suPin1" type="password" autocomplete="new-password">
+            </div>
+            <div class="field">
+              <label for="suPin2" id="suPin2Label"></label>
+              <input id="suPin2" type="password" autocomplete="new-password">
+            </div>
+          </div>
+          <p class="dialog-error fine hidden" id="suError" role="status"></p>
+          <p class="row"><button class="btn-primary" id="suCreate"></button></p>
+        </div>
+
+        <div class="auth-div" aria-hidden="true"><span>or</span></div>
+
+        <p class="row center"><button class="btn-quiet btn-guest" id="btnGuest"></button></p>
+        <p class="fine center" id="guestFine"></p>
+
+      </section>
+
+    </main>
+
+    <footer class="portal-foot">
+      <p class="privacy">Offline it runs entirely in your browser - profiles and records stay
+        on this device. With the SpotSafe server running, your account and training history
+        sync to it. No third parties, no tracking.</p>
+      <p class="credit">A Multiply enterprise project &middot; UK HSE hazard content</p>
+    </footer>
+
+  </div>
+
+  <!-- How to play overlay -->
+  <div id="howto" class="overlay hidden" role="dialog" aria-modal="true" aria-label="How to play">
+    <div class="panel">
+      <h2 id="howToTitle">How to play</h2>
+      <ul class="howto-list" id="howToList"></ul>
+      <p class="row center"><button class="btn-primary" id="btnHowClose">Got it</button></p>
+    </div>
+  </div>
+
+  <script src="js/hazards.js?v=16.6"></script>
+  <script src="js/store.js?v=16.6"></script>
+  <script src="js/net.js?v=16.6"></script>
+  <script src="js/auth.js?v=16.6"></script>
+<div class="buildTag">SS360 · build 16.6</div>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a49bffdb3bfb2865',t:'MTc5MTg2OTkyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

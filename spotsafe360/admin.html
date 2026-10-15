@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0A1524">
+  <!-- Phase 12: company supervision panel. Pure DOM like the dashboard -
+       no engine, strict CSP, and every request re-authorised by the server.
+       12.1: rebuilt on the dashboard's layout language (head + cards + grid)
+       because the narrow login-card panels crowded the tables. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self';">
+  <title>SpotSafe 360 - company supervision</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=17.1">
+</head>
+<body class="portal dash">
+
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="portal-wrap dash-wrap">
+
+    <header class="topbar">
+      <div class="logo">
+        <img class="logo-mark" src="img/logo.svg" width="34" height="39" alt="" aria-hidden="true">
+        <span>SpotSafe 360</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-quiet" id="btnPortal"></button>
+        <button class="btn-quiet" id="btnOut"></button>
+      </div>
+    </header>
+
+    <!-- Refusals keep the small centred card - same shape as the dashboard's
+         "login needed" panel, so a dead end always looks the same. -->
+    <section class="panel dash-login hidden" id="notAdmin" aria-label="Admin access required">
+      <h2 id="naTitle"></h2>
+      <p class="row"><a class="btn-primary" href="index.html" id="naBtn"></a></p>
+    </section>
+
+    <section class="panel dash-login hidden" id="needServer" aria-label="Server needed">
+      <h2 id="nsTitle"></h2>
+      <p class="row"><a class="btn-primary" href="index.html" id="nsBtn"></a></p>
+    </section>
+
+    <main id="adminMain" class="hidden">
+
+      <!-- Identity header: same rhythm as dashboard.html's dash-head -->
+      <section class="admin-head">
+        <span class="admin-av" id="companyAv" aria-hidden="true"></span>
+        <div>
+          <h1 id="companyName"></h1>
+          <p class="admin-since" id="companySince"></p>
+        </div>
+      </section>
+
+      <!-- Invite code -->
+      <section class="admin-card">
+        <h2 class="side-title" id="inviteTitle"></h2>
+        <p class="fine" id="inviteFine"></p>
+        <p class="row invite-row">
+          <input id="inviteCode" class="code-input" readonly autocomplete="off"
+                 spellcheck="false" aria-label="Company invite code">
+          <button class="btn-quiet btn-sm" id="inviteCopyBtn" type="button"></button>
+        </p>
+        <p class="fine admin-copied hidden" id="inviteCopied"></p>
+      </section>
+
+      <!-- Roster -->
+      <!-- 17.0: company performance charts (17.1 redesign) -->
+      <section class="admin-card" id="analyticsCard">
+        <h2 class="side-title" id="analyticsTitle"></h2>
+        <p class="fine" id="analyticsHint"></p>
+        <div class="stat-tiles hidden" id="statTiles"></div>
+        <div class="chart-grid" id="chartGrid">
+          <div class="chart-box">
+            <h3 id="chartAvgTitle"></h3>
+            <div id="chartAvg" aria-label="Average score by learner"></div>
+          </div>
+          <div class="chart-box">
+            <h3 id="chartActivityTitle"></h3>
+            <div id="chartActivity" aria-label="Rounds per day, last 14 days"></div>
+          </div>
+          <div class="chart-box">
+            <h3 id="chartHazardsTitle"></h3>
+            <div id="chartHazards" aria-label="Most-missed hazards"></div>
+          </div>
+        </div>
+        <p class="fine hidden" id="analyticsEmpty"></p>
+      </section>
+
+      <section class="admin-card">
+        <h2 class="side-title" id="learnersTitle"></h2>
+        <p class="fine" id="learnersHint"></p>
+        <div class="admin-scroll" id="learnersBox"></div>
+      </section>
+
+      <!-- Board + per-learner history side by side on wide screens -->
+      <div class="admin-grid">
+        <section class="admin-card">
+          <h2 class="side-title" id="boardTitle"></h2>
+          <div class="admin-scroll" id="boardBox"></div>
+        </section>
+        <section class="admin-card hidden" id="historyPanel">
+          <h2 class="side-title" id="historyTitle"></h2>
+          <div class="admin-scroll" id="historyBox"></div>
+        </section>
+      </div>
+
+    </main>
+
+    <footer class="portal-foot">
+      <p class="credit">A Multiply enterprise project &middot; UK HSE hazard content</p>
+    </footer>
+
+  </div>
+
+  <script src="js/hazards.js?v=17.1"></script>
+  <script src="js/store.js?v=17.1"></script>
+  <script src="js/net.js?v=17.1"></script>
+  <script src="js/admin.js?v=17.1"></script>
+<div class="buildTag">SS360 · build 17.1</div>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a49c58859e47272a',t:'MTc5MTg3MzU1Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 64" role="img" aria-label="SpotSafe 360">
+  <title>SpotSafe 360</title>
+  <!-- Shield in two blues: the lit right face over a darker left face, split
+       down the centre line. The crosshair is the hi-vis yellow from the rest
+       of the identity, #FFD100. -->
+  <defs>
+    <clipPath id="ss360-shield">
+      <path d="M8 3h40q4 0 4 4v26c0 13-10 22.5-24 28.5C14 55.5 4 46 4 33V7q0-4 4-4z"/>
+    </clipPath>
+  </defs>
+  <path d="M8 3h40q4 0 4 4v26c0 13-10 22.5-24 28.5C14 55.5 4 46 4 33V7q0-4 4-4z" fill="#1666D6"/>
+  <rect x="0" y="0" width="28" height="64" fill="#1F4E96" clip-path="url(#ss360-shield)"/>
+  <g fill="none" stroke="#FFD100" stroke-width="5" stroke-linecap="round">
+    <circle cx="28" cy="30" r="12"/>
+    <path d="M28 11.5v6.5M28 42v6.5M9.5 30H16M40 30h6.5"/>
+  </g>
+  <circle cx="28" cy="30" r="4" fill="#FFD100"/>
+</svg>

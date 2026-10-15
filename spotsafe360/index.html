@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0A1524">
+  <!-- Deliberately stricter than game.html: the portal is pure DOM, it never
+       loads the 3D engine, so it needs no 'unsafe-eval'. Even with the engine
+       file renamed away, this page must keep working (Phase 4 gate). -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self';">
+  <title>SpotSafe 360 - hazard perception training</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=17.4">
+</head>
+<body class="portal">
+
+  <!-- Blueprint grid behind everything. Decorative only. -->
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="portal-wrap">
+
+    <header class="topbar">
+      <div class="logo">
+        <img class="logo-mark" src="img/logo.svg" width="34" height="39" alt="" aria-hidden="true">
+        <span>SpotSafe 360</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-note">Hazard perception training</span>
+        <button class="btn-quiet hidden" id="btnDash"></button>
+        <button class="btn-quiet hidden" id="btnAdmin"></button>
+        <button class="btn-quiet hidden" id="btnLogout"></button>
+        <button class="btn-quiet" id="btnHowTo">How to play</button>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- Hero -->
+      <section class="hero">
+        <h1>See the hazard before<br><em>it sees you.</em></h1>
+        <p class="tagline" id="tagline">Spot the hazard. Learn the fix. Keep the bay safe.</p>
+      </section>
+
+      <!-- Phase 9.5: sign-in / sign-up / guest live on login.html; this page
+           is only reachable with a session (js/gate.js redirects otherwise). -->
+
+      <!-- Setup: avatar, name, mode, difficulty, start -->
+      <section class="setup" aria-label="Game setup">
+
+        <!-- Phase 9.9: a signed-in account already owns a name and avatar,
+             so both fields disappear and a single line states who trains. -->
+        <p class="training-as hidden" id="trainingAs"></p>
+
+        <div class="field field-avatars" id="avatarField">
+          <span class="field-label" id="avatarLabel">Pick an avatar</span>
+          <div class="avatar-row" id="avatarRow" role="group" aria-labelledby="avatarLabel"></div>
+          <p class="perk-line" id="perkLine"></p>
+        </div>
+
+        <div class="field" id="nameField">
+          <label for="nameInput" id="nameLabel">Your name</label>
+          <input id="nameInput" type="text" maxlength="16" placeholder="Enter your name..." autocomplete="off">
+        </div>
+
+        <!-- 16.4: full-width choice cards instead of the cramped pill tray -->
+        <div class="field">
+          <span class="field-label" id="modeTitle">Choose a mode</span>
+          <div class="mode-row" id="modeRow" role="group" aria-labelledby="modeTitle"></div>
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="diffTitle">Choose a difficulty</span>
+          <div class="diff-row" id="diffRow" role="group" aria-labelledby="diffTitle"></div>
+        </div>
+
+        <div class="start-row">
+          <button class="btn-primary btn-big" id="btnStart">Start Game</button>
+          <button class="btn-join" id="btnJoinDuel" type="button"></button>
+        </div>
+        <div class="join-row hidden" id="joinRow">
+          <input id="joinCodeIn" class="code-input" maxlength="14" placeholder="DUEL-XXXX"
+                 autocomplete="off" spellcheck="false" aria-label="Challenge code">
+          <button class="btn-primary btn-sm" id="btnJoinGo" type="button"></button>
+          <span class="fine join-msg" id="joinMsg" role="status"></span>
+        </div>
+        <p class="start-hint" id="startHint"></p>
+
+      </section>
+
+      <!-- Local leaderboard -->
+      <section class="board-strip" aria-label="Leaderboard">
+        <h2 class="side-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3"/>
+          </svg>
+          <span id="leaderTitle">Leaderboard</span>
+        </h2>
+        <div id="boardBox"></div>
+      </section>
+
+    </main>
+
+    <footer class="portal-foot">
+      <p class="privacy" id="privacyLine">
+        Offline it runs entirely in your browser. With the SpotSafe server
+        running, your account and records sync to it. No third parties, no tracking.
+      </p>
+      <p class="credit">A Multiply enterprise project &middot; UK HSE hazard content</p>
+    </footer>
+
+  </div>
+
+  <!-- How to play overlay -->
+  <div id="howto" class="overlay hidden" role="dialog" aria-modal="true" aria-label="How to play">
+    <div class="panel">
+      <h2 id="howToTitle">How to play</h2>
+      <ul class="howto-list" id="howToList"></ul>
+      <p class="row center"><button class="btn-primary" id="btnHowClose">Got it</button></p>
+    </div>
+  </div>
+
+  <!-- Data first (shared with the game), then the storage layer, then portal
+       logic. No engine here. -->
+  <script src="js/hazards.js?v=17.4"></script>
+  <script src="js/store.js?v=17.4"></script>
+  <script src="js/net.js?v=17.4"></script>
+  <script src="js/gate.js?v=17.4"></script>
+  <script src="js/dashcalc.js?v=17.4"></script>
+  <script src="js/portal.js?v=17.4"></script>
+<div class="buildTag">SS360 · build 17.4</div>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a49dbbd1db5d2865',t:'MTc5MTg4ODEwNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
