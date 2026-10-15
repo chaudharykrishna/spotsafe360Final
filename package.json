@@ -6,12 +6,13 @@
     "test": "tests"
   },
   "scripts": {
+    "start": "node server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "SpotSafe 360 hazard perception training application",
   "dependencies": {
     "jsdom": "^29.1.1"
   }
