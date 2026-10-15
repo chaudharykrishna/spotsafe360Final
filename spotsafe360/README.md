@@ -11,7 +11,7 @@ delivered at ISMT College.
 
 ## Run it
 
-1. **Live link (easiest):** https://chaudharykrishna.github.io/spotsafe360/
+1. **Live link (easiest):** https://spotsafe360final.onrender.com/login.html
 2. **From the folder:** double-click `index.html`. Tested by double-click in a
    Chromium browser (Chrome and Edge are Chromium-based); Firefox allows local
    files by default. No installer, no build step, no administrator rights.
